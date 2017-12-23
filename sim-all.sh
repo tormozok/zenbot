@@ -3,9 +3,11 @@
 TMP_FILE="simulations/new-summary.html"
 FULL_FILE="simulations/full-summary.html"
 # testing days
-days=(1 3 7)
-BACKFILL_DAYS=7
-BACKTESTER_DAYS=3
+days=(1 2 3 4 5 6 7 8)
+BACKFILL_DAYS=8
+BACKTESTER_DAYS=8
+
+DEFAULT_PARAM="--profit_stop_pct=1 --profit_stop_enable_pct=2"
 
 set -x
 
@@ -16,24 +18,43 @@ SED="sed"
 fi
 
 
-while true; do
+#while true; do
 
 echo "<table>" > $TMP_FILE
 
 for i in `cat sim-list.txt| grep -v '#'`; do
 
+go=true
+
+while $go; do
+go=false
+
 ./zenbot.sh backfill $i --days $BACKFILL_DAYS
 
-rm ./backtesting_*.csv
+if [ $? -ne 0 ] ; then
+  go=true
+  continue
+fi
 
-scripts/auto_backtester/backtester.js $i --days $BACKTESTER_DAYS
+rm *.csv
 
-PARAM=`cat backtesting_*.csv |  sed -n 2p | awk -F "\"*,\"*" '{print " --trend_ema=" $13  " --oversold_rsi=" $16 " --oversold_rsi_periods=" $15 " --neutral_rate=" $14 " --period=" $10  "  --min_periods=" $11 }'`
+scripts/auto_backtester/backtester.js $i --days $BACKTESTER_DAYS --profit_stop_pct=1 --profit_stop_enable_pct=2
+
+if [ $? -ne 0 ] ; then
+  go=true
+  continue
+fi
+
+PARAM=`cat *.csv | grep oversold_rsi_periods | $SED -n 1p | awk -F "\"*,\"*" '{print " --trend_ema=" $13  " --oversold_rsi=" $16 " --oversold_rsi_periods=" $15 " --neutral_rate=" $14 " --period=" $10  "  --min_periods=" $11 }'`
+
+done
+
+PARAM="$PARAM $DEFAULT_PARAM"
 
 echo "<tr><td colspan='6'>$i $PARAM</td></tr>" >> $TMP_FILE
 
 rm -fv simulations/sim*
-rm -fv ./backtesting_*.csv
+rm -fv *.csv
 
 for d in ${days[@]};  do
 
@@ -49,12 +70,12 @@ IFS=$'\n'
 
 done
 
-echo "<tr><td>---</td></tr>" >> $TMP_FILE   
+echo "<tr><td>---</td></tr>" >> $TMP_FILE
 
 done
 
-echo "</table>" >> $TMP_FILE   
+echo "</table>" >> $TMP_FILE
 
 mv -f $TMP_FILE $FULL_FILE
 
-done
+#done
