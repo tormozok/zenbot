@@ -30,13 +30,13 @@ module.exports = function container (get, set, clear) {
   function WatchOrder(id, created){
     let found =  orderWatchList.find(ord => ord.id == id);
     if(!found) {
-      console.log("\n start watch order" + id + " " + new Date(created).toISOString());
+      console.log("\n start watch order " + id + " " + new Date(created).toISOString());
       orderWatchList.push([id,created]);
     }
   }
 
   function UnWatchOrder(id){
-    console.log("\n stop watch order" + id);
+    console.log("\n stop watch order " + id);
     orderWatchList = orderWatchList.filter(ord => ord[0] != id);
   }
 
