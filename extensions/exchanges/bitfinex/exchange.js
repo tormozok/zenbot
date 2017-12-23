@@ -27,11 +27,11 @@ module.exports = function container (get, set, clear) {
 
   var orderWatchList = [];
 
-  function WatchOrder(id, created){
+  function WatchOrder(id){
     let found =  orderWatchList.find(ord => ord.id == id);
     if(!found) {
-      console.log("\n start watch order " + id + " " + new Date(created).toISOString());
-      orderWatchList.push([id,created]);
+      console.log("\n start watch order " + id + " " + new Date().toISOString());
+      orderWatchList.push([id,Date.now()]);
     }
   }
 
@@ -106,7 +106,7 @@ module.exports = function container (get, set, clear) {
   function wsUpdateOrder (ws_order) {
 
     if (ws_order[13] === 'ACTIVE' || ws_order[13].match(/^PARTIALLY FILLED/)) {
-      WatchOrder(ws_order[0], Date.now());
+      WatchOrder(ws_order[0]);
     } else {
       UnWatchOrder(ws_order[0]);
     }
