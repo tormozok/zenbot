@@ -215,8 +215,6 @@ module.exports = function container (get, set, clear) {
   function wsSubscribed (event) {
     // We only use the 'trades' channel for heartbeats. That one should be most frequently updated.
     if (event.channel === "trades") {
-      CheckOrders();
-
       ws_hb[event.chanId] = Date.now()
 
       heartbeat_interval = setInterval(function() {
@@ -272,6 +270,7 @@ module.exports = function container (get, set, clear) {
         .on('message', wsMessage)
         .on('trade', wsUpdateTrades)
         .on('ticker', wsUpdateTicker)
+        .on('ticker', CheckOrders)
         .on('ws', updateWallet)
         .on('wu', updateWallet)
         .on('on', wsUpdateOrder)
