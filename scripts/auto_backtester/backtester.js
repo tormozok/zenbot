@@ -89,9 +89,17 @@ let runCommand = (strategy, cb) => {
     if (code) {
       console.error(command)
       console.error(stderr)
-      return cb(null, null)
+      // return cb(null, null)
+      return runCommand(strategy, cb)
     }
-    cb(null, processOutput(stdout));
+    let out = null;
+    try {
+      out = processOutput(stdout)
+    } catch (e) {
+      console.error(e)
+      return runCommand(strategy, cb)
+    }
+    cb(null, out);
   });
 };
 

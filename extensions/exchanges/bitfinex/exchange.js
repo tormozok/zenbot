@@ -229,6 +229,7 @@ module.exports = function container (get, set, clear) {
         .on('ws', updateWallet)
         .on('wu', updateWallet)
         .on('on', wsUpdateOrder)
+        .on('os', ords => ords.forEach(ord => wsUpdateOrder(ord)))
         .on('on-req', wsUpdateReqOrder)
         .on('ou', wsUpdateOrder)
         .on('oc', wsUpdateOrderCancel)
