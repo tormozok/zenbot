@@ -10,7 +10,7 @@ BACKFILL_DAYS=8
 BACKTESTER_DAYS=8
 #BACKTESTER_DAYS=1
 
-STATIC_PARAM="--order-type=taker"
+STATIC_PARAM="--order_type=taker"
 TEST_PARAM="$STATIC_PARAM --trend_ema=26:1:10 --profit_stop_enable_pct=5:1:1 --profit_stop_pct=5:1:1 --oversold_rsi=27:1:1 --oversold_rsi_periods=20:1:1"
 
 set -x
