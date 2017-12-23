@@ -43,7 +43,7 @@ module.exports = function container (get, set, clear) {
   function CheckOrders() {
     orderWatchList.forEach(ord => {
       if(Date.now() - ord[1] > order_timeout) {
-        console.log("\n Order timeout: " + (Date.now() - ord[1]) + " " + JSON.stringify(ws_order))
+        console.log("\n Order timeout: " + (Date.now() - ord[1]) + " " + ord[0])
         var ws_cancel_order = [
           0,
           'oc',
