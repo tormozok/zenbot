@@ -13,7 +13,7 @@ module.exports = function container (get, set, clear) {
   var ws_connected = false
   var ws_timeout = 60000
   var ws_retry = 10000
-  var order_timeout = 30*1000;
+  var order_timeout = 60*1000;
 
   var pair, public_client, ws_client
 
