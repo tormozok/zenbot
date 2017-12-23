@@ -36,7 +36,7 @@ module.exports = function container (get, set, clear) {
   }
 
   function UnWatchOrder(id){
-    console.log("\n stop watch order" + id + " " + new Date(created).toISOString());
+    console.log("\n stop watch order" + id);
     orderWatchList = orderWatchList.filter(ord => ord[0] != id);
   }
 
