@@ -57,6 +57,7 @@ module.exports = function container (get, set, clear) {
         ]
         try {
           ws_client.send(ws_cancel_order)
+          UnWatchOrder(ord[0])
         }catch(e){
           console.log("\n can't cancel order", e);
         }
