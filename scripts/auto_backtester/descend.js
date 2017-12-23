@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-let deltas = 4;
+let deltas = 5;
 let stopDelta = 0;
 
 let shell     = require('shelljs');
