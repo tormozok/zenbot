@@ -36,14 +36,17 @@ module.exports = function container (get, set, clear) {
   }
 
   function UnWatchOrder(id){
-    console.log("\n stop watch order " + id);
-    orderWatchList = orderWatchList.filter(ord => ord[0] != id);
+    let found =  orderWatchList.find(ord => ord.id == id);
+    if(found) {
+      console.log("\n stop watch order " + found[0] + " " + new Date(found[1]).toISOString());
+      orderWatchList = orderWatchList.filter(ord => ord[0] != id);
+    }
   }
 
   function CheckOrders() {
     orderWatchList.forEach(ord => {
       if(Date.now() - ord[1] > order_timeout) {
-        console.log("\n Order timeout: " + (Date.now() - ord[1]) + " " + ord[0])
+        console.log("\n Order timeout: " + ord[0] + (Date.now() - ord[1]))
         var ws_cancel_order = [
           0,
           'oc',
