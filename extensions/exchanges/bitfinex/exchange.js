@@ -13,6 +13,7 @@ module.exports = function container (get, set, clear) {
   var ws_connected = false
   var ws_timeout = 60000
   var ws_retry = 10000
+  var order_timeout = 60*1000;
 
   var pair, public_client, ws_client
 
@@ -67,6 +68,25 @@ module.exports = function container (get, set, clear) {
   }
 
   function wsUpdateOrder (ws_order) {
+    if(Date.now() - ws_order[5] > order_timeout) {
+      console.log("Order timeout: " + (Date.now() - ws_order[5]) + " " + JSON.stringify(ws_order))
+      var ws_cancel_order = [
+        0,
+        'oc',
+        null,
+        {
+          id: ws_order[0]
+        }
+      ]
+      try {
+        ws_client.send(ws_cancel_order)
+      }catch(e){
+        consloe.log("can't cancel order", e);
+      }
+    } else {
+      console.log("normal order: " + (Date.now() - ws_order[5]) + " " + JSON.stringify(ws_order))
+    }
+
     cid = ws_order[2]
 
     // https://bitfinex.readme.io/v2/reference#ws-auth-orders
