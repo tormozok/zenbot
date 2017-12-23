@@ -4,10 +4,13 @@ TMP_FILE="simulations/new-summary.html"
 FULL_FILE="simulations/full-summary.html"
 # testing days
 days=(1 2 3 4 5 6 7 8)
+#days=(1)
 BACKFILL_DAYS=8
+#BACKFILL_DAYS=1
 BACKTESTER_DAYS=8
+#BACKTESTER_DAYS=1
 
-DEFAULT_PARAM="--profit_stop_pct=1 --profit_stop_enable_pct=2"
+TEST_PARAM="--trend_ema=26:1:10 --profit_stop_enable_pct=5:1:1 --profit_stop_pct=5:1:1 --oversold_rsi=27:1:1 --oversold_rsi_periods=20:1:1"
 
 set -x
 
@@ -36,25 +39,31 @@ if [ $? -ne 0 ] ; then
   continue
 fi
 
-rm *.csv
+# rm *.csv
 
-scripts/auto_backtester/backtester.js $i --days $BACKTESTER_DAYS --profit_stop_pct=1 --profit_stop_enable_pct=2
+scripts/auto_backtester/descend.js $i --days=$BACKTESTER_DAYS $TEST_PARAM > descend.txt
+
+cat descend.txt
+
+PARAM=`cat descend.txt | tail -n1 | tr -d '\n'`
+
+# scripts/auto_backtester/backtester.js $i --days $BACKTESTER_DAYS --profit_stop_pct=1 --profit_stop_enable_pct=2
 
 if [ $? -ne 0 ] ; then
   go=true
   continue
 fi
 
-PARAM=`cat *.csv | grep oversold_rsi_periods | $SED -n 1p | awk -F "\"*,\"*" '{print " --trend_ema=" $13  " --oversold_rsi=" $16 " --oversold_rsi_periods=" $15 " --neutral_rate=" $14 " --period=" $10  "  --min_periods=" $11 }'`
+#PARAM=`cat *.csv | grep oversold_rsi_periods | $SED -n 1p | awk -F "\"*,\"*" '{print " --trend_ema=" $13  " --oversold_rsi=" $16 " --oversold_rsi_periods=" $15 " --neutral_rate=" $14 " --period=" $10  "  --min_periods=" $11 }'`
 
 done
 
-PARAM="$PARAM $DEFAULT_PARAM"
+#PARAM="$PARAM $DEFAULT_PARAM"
 
 echo "<tr><td colspan='6'>$i $PARAM</td></tr>" >> $TMP_FILE
 
 rm -fv simulations/sim*
-rm -fv *.csv
+# rm -fv *.csv
 
 for d in ${days[@]};  do
 
