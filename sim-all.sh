@@ -14,12 +14,6 @@ TEST_PARAM="--trend_ema=26:1:10 --profit_stop_enable_pct=5:1:1 --profit_stop_pct
 
 set -x
 
-if `gsed`; then
-SED="gsed"
-else
-SED="sed"
-fi
-
 
 #while true; do
 
@@ -41,11 +35,11 @@ fi
 
 # rm *.csv
 
-scripts/auto_backtester/descend.js $i --days=$BACKTESTER_DAYS $TEST_PARAM > descend.txt
+scripts/auto_backtester/descend.js $i --days=$BACKTESTER_DAYS $TEST_PARAM | tee descend.txt
 
 cat descend.txt
 
-PARAM=`cat descend.txt | tail -n1 | tr -d '\n'`
+PARAM=`cat descend.txt | grep BestArgs: | tail -n1 | tr -d '\n' | sed 's/BestArgs://'`
 
 # scripts/auto_backtester/backtester.js $i --days $BACKTESTER_DAYS --profit_stop_pct=1 --profit_stop_enable_pct=2
 
@@ -54,7 +48,7 @@ if [ $? -ne 0 ] ; then
   continue
 fi
 
-#PARAM=`cat *.csv | grep oversold_rsi_periods | $SED -n 1p | awk -F "\"*,\"*" '{print " --trend_ema=" $13  " --oversold_rsi=" $16 " --oversold_rsi_periods=" $15 " --neutral_rate=" $14 " --period=" $10  "  --min_periods=" $11 }'`
+#PARAM=`cat *.csv | grep oversold_rsi_periods | sed -n 1p | awk -F "\"*,\"*" '{print " --trend_ema=" $13  " --oversold_rsi=" $16 " --oversold_rsi_periods=" $15 " --neutral_rate=" $14 " --period=" $10  "  --min_periods=" $11 }'`
 
 done
 
@@ -67,15 +61,14 @@ rm -fv simulations/sim*
 
 for d in ${days[@]};  do
 
-IFS=
-OUT=`./zenbot.sh sim $i --days=$d --filename=simulations/$i-$d-days.html $PARAM | $SED -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | egrep '^[a-z]+.*:.*' | tr '\n' '\t' | $SED 's/\t/<\/td><td>/g'`
+./zenbot.sh sim $i --days=$d --filename=simulations/$i-$d-days.html $PARAM | tee sim.txt
+
+OUT=`cat sim.txt | sed -r "s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" | egrep '^[a-z]+.*:.*' | tr '\n' '\t' | sed 's/\t/<\/td><td>/g'`
 OUT=`echo "<tr><td>$d days|</td><td>$OUT</td></tr>"`
 
 echo "$OUT"
 
 echo $OUT >> $TMP_FILE
-
-IFS=$'\n'
 
 done
 

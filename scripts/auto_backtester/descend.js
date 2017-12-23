@@ -206,9 +206,9 @@ let run = async() => {
       } while(Math.abs(bestBalance - oldArgBalance) > stopDelta);
     }
 
-    console.log("Iteration Best -> " + bestBalance + "(+" + (bestBalance - oldBalance) + ") " + vargsToStr(varArgs));
+    console.log("Iteration Best -> " + bestBalance + "(+" + (bestBalance - oldBalance) + ") ");
+    console.log("BestArgs: " +vargsToStr(varArgs));
   } while (Math.abs(oldBalance - bestBalance) > stopDelta);
-  console.log(varArgs.map(a => "--" + a.name + "=" + a.value).join(" "))
 };
 
 run();
