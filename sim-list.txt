@@ -1,9 +1,9 @@
-bitfinex.BTC-USD
+bitfinex.ZEC-USD
 bitfinex.LTC-USD
 bitfinex.ETH-USD
 bitfinex.ETC-USD
+bitfinex.BTC-USD
 #bitfinex.RRT-USD
-bitfinex.ZEC-USD
 bitfinex.XMR-USD
 bitfinex.DSH-USD
 #bitfinex.BCC-USD
