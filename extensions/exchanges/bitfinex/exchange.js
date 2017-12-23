@@ -13,7 +13,7 @@ module.exports = function container (get, set, clear) {
   var ws_connected = false
   var ws_timeout = 60000
   var ws_retry = 10000
-  var order_timeout = 60*1000;
+  var order_timeout = 30*1000;
 
   var pair, public_client, ws_client
 
@@ -24,6 +24,42 @@ module.exports = function container (get, set, clear) {
   var ws_hb = []
   var ws_walletCalcDone
   var heartbeat_interval
+
+  var orderWatchList = [];
+
+  function WatchOrder(id, created){
+    let found =  orderWatchList.find(ord => ord.id == id);
+    if(!found) {
+      console.log("\n start watch order" + id + " " + new Date(created).toISOString());
+      orderWatchList.push([id,created]);
+    }
+  }
+
+  function UnWatchOrder(id){
+    console.log("\n stop watch order" + id + " " + new Date(created).toISOString());
+    orderWatchList = orderWatchList.filter(ord => ord[0] != id);
+  }
+
+  function CheckOrders() {
+    orderWatchList.forEach(ord => {
+      if(Date.now() - ord[1] > order_timeout) {
+        console.log("\n Order timeout: " + (Date.now() - ord[1]) + " " + JSON.stringify(ws_order))
+        var ws_cancel_order = [
+          0,
+          'oc',
+          null,
+          {
+            id: ord[0]
+          }
+        ]
+        try {
+          ws_client.send(ws_cancel_order)
+        }catch(e){
+          console.log("\n can't cancel order", e);
+        }
+      }
+    });
+  }
 
   function publicClient () {
     if (!public_client) public_client = new BFX(null,null, {version: 2, transform: true}).rest
@@ -68,23 +104,11 @@ module.exports = function container (get, set, clear) {
   }
 
   function wsUpdateOrder (ws_order) {
-    if(Date.now() - ws_order[5] > order_timeout) {
-      console.log("Order timeout: " + (Date.now() - ws_order[5]) + " " + JSON.stringify(ws_order))
-      var ws_cancel_order = [
-        0,
-        'oc',
-        null,
-        {
-          id: ws_order[0]
-        }
-      ]
-      try {
-        ws_client.send(ws_cancel_order)
-      }catch(e){
-        consloe.log("can't cancel order", e);
-      }
+
+    if (ws_order[13] === 'ACTIVE' || ws_order[13].match(/^PARTIALLY FILLED/)) {
+      WatchOrder(ws_order[0], ws_order[4]);
     } else {
-      console.log("normal order: " + (Date.now() - ws_order[5]) + " " + JSON.stringify(ws_order))
+      UnWatchOrder(ws_order[0]);
     }
 
     cid = ws_order[2]
@@ -191,6 +215,8 @@ module.exports = function container (get, set, clear) {
   function wsSubscribed (event) {
     // We only use the 'trades' channel for heartbeats. That one should be most frequently updated.
     if (event.channel === "trades") {
+      CheckOrders();
+
       ws_hb[event.chanId] = Date.now()
 
       heartbeat_interval = setInterval(function() {
