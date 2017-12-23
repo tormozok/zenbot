@@ -142,6 +142,8 @@ module.exports = function container (get, set, clear) {
   }
 
   function wsUpdateOrderCancel (ws_order) {
+    UnWatchOrder(ws_order[0]);
+
     cid = ws_order[2]
 
     if (!ws_orders['~' + cid]) {
