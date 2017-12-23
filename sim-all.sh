@@ -10,7 +10,8 @@ BACKFILL_DAYS=8
 BACKTESTER_DAYS=8
 #BACKTESTER_DAYS=1
 
-TEST_PARAM="--trend_ema=26:1:10 --profit_stop_enable_pct=5:1:1 --profit_stop_pct=5:1:1 --oversold_rsi=27:1:1 --oversold_rsi_periods=20:1:1"
+STATIC_PARAM="--order-type=taker"
+TEST_PARAM="$STATIC_PARAM --trend_ema=26:1:10 --profit_stop_enable_pct=5:1:1 --profit_stop_pct=5:1:1 --oversold_rsi=27:1:1 --oversold_rsi_periods=20:1:1"
 
 set -x
 
@@ -35,7 +36,7 @@ fi
 
 # rm *.csv
 
-scripts/auto_backtester/descend.js $i --days=$BACKTESTER_DAYS $TEST_PARAM | tee descend.txt
+scripts/auto_backtester/descend.js $i --days=$BACKTESTER_DAYS $STATIC_PARAM $TEST_PARAM | tee descend.txt
 
 cat descend.txt
 
@@ -54,14 +55,14 @@ done
 
 #PARAM="$PARAM $DEFAULT_PARAM"
 
-echo "<tr><td colspan='6'>$i $PARAM</td></tr>" >> $TMP_FILE
+echo "<tr><td colspan='6'>$i $STATIC_PARAM $PARAM</td></tr>" >> $TMP_FILE
 
 rm -fv simulations/sim*
 # rm -fv *.csv
 
 for d in ${days[@]};  do
 
-./zenbot.sh sim $i --days=$d --filename=simulations/$i-$d-days.html $PARAM | tee sim.txt
+./zenbot.sh sim $i --days=$d --filename=simulations/$i-$d-days.html $STATIC_PARAM $PARAM | tee sim.txt
 
 OUT=`cat sim.txt | sed -r "s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" | egrep '^[a-z]+.*:.*' | tr '\n' '\t' | sed 's/\t/<\/td><td>/g'`
 OUT=`echo "<tr><td>$d days|</td><td>$OUT</td></tr>"`
