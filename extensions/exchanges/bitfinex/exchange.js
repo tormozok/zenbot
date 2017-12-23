@@ -106,7 +106,7 @@ module.exports = function container (get, set, clear) {
   function wsUpdateOrder (ws_order) {
 
     if (ws_order[13] === 'ACTIVE' || ws_order[13].match(/^PARTIALLY FILLED/)) {
-      WatchOrder(ws_order[0], ws_order[4]);
+      WatchOrder(ws_order[0], Date.now());
     } else {
       UnWatchOrder(ws_order[0]);
     }
