@@ -13,12 +13,12 @@ let StripAnsi = require('strip-ansi');
 let constArgs = [];
 let varArgs = [];
 
-let varArgRegEx = /--(.+)=(.*):(.*):(.*)/;
+let varArgRegEx = /--(.+)=(.+):(.+):(.+):([a-z]{0,1})/;
 
 process.argv.slice(2).forEach(a => {
   let match = varArgRegEx.exec(a);
   if(match) {
-    varArgs.push({name:match[1],value:+match[2],delta:+match[3],min:+match[4]});
+    varArgs.push({name:match[1],value:+match[2],delta:+match[3],min:+match[4],suffix:match[5]});
   } else {
     constArgs.push(a);
   }
@@ -163,7 +163,7 @@ let processOutput = output => {
 };
 
 let vargsToStr = ars => {
-  return ars.map(a => "--" + a.name + "=" + a.value).join(" ");
+  return ars.map(a => "--" + a.name + "=" + a.value + a.suffix).join(" ");
 }
 
 let mkCmd = (ars) => {
