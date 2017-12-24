@@ -12,7 +12,7 @@ BACKTESTER_DAYS=8
 
 #STATIC_PARAM="--order_type=maker"
 STATIC_PARAM="--order_type=taker"
-TEST_PARAM="--period=300:30:30:s --trend_ema=26:1:10: --profit_stop_enable_pct=5:1:1: --profit_stop_pct=5:1:1: --oversold_rsi=27:1:1: --oversold_rsi_periods=20:1:1:"
+TEST_PARAM="--trend_ema=26:1:10: --period=2:1:1:m --profit_stop_enable_pct=2:1:1: --profit_stop_pct=1:1:1: --oversold_rsi=27:1:1: --oversold_rsi_periods=20:1:1:"
 
 set -x
 
