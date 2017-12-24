@@ -3,16 +3,16 @@
 TMP_FILE="simulations/new-summary.html"
 FULL_FILE="simulations/full-summary.html"
 # testing days
-#days=(1 2 3 4 5 6 7 8)
-days=(1)
-#BACKFILL_DAYS=8
-BACKFILL_DAYS=1
-#BACKTESTER_DAYS=8
-BACKTESTER_DAYS=1
+days=(1 2 3 4 5 6 7 8)
+#days=(1)
+BACKFILL_DAYS=8
+#BACKFILL_DAYS=1
+BACKTESTER_DAYS=8
+#BACKTESTER_DAYS=1
 
 #STATIC_PARAM="--order_type=maker"
 STATIC_PARAM="--order_type=taker"
-TEST_PARAM="--period=5:1:1:m --trend_ema=26:1:10: --profit_stop_enable_pct=5:1:1: --profit_stop_pct=5:1:1: --oversold_rsi=27:1:1: --oversold_rsi_periods=20:1:1:"
+TEST_PARAM="--period=300:20:20:s --trend_ema=26:1:10: --profit_stop_enable_pct=5:1:1: --profit_stop_pct=5:1:1: --oversold_rsi=27:1:1: --oversold_rsi_periods=20:1:1:"
 
 set -x
 
