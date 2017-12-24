@@ -27,19 +27,19 @@ module.exports = function container (get, set, clear) {
 
   var orderWatchList = [];
 
-  function WatchOrder(id){
-    let found =  orderWatchList.find(ord => ord.id == id);
+  function WatchOrder(ws_order){
+    let found =  orderWatchList.find(ord => ord[0] == ws_order[0]);
     if(!found) {
-      console.log("\n start watch order " + id + " " + new Date().toISOString());
-      orderWatchList.push([id,Date.now()]);
+      console.log("\n start watch order " + JSON.stringify(ws_order));
+      orderWatchList.push([ws_order[0],Date.now()]);
     }
   }
 
-  function UnWatchOrder(id){
-    let found =  orderWatchList.find(ord => ord.id == id);
+  function UnWatchOrder(ws_order){
+    let found =  orderWatchList.find(ord => ord[0] == ws_order[0]);
     if(found) {
-      console.log("\n stop watch order " + found[0] + " " + new Date(found[1]).toISOString());
-      orderWatchList = orderWatchList.filter(ord => ord[0] != id);
+      console.log("\n stop watch order " + JSON.stringify(ws_order));
+      orderWatchList = orderWatchList.filter(ord => ord[0] != ws_order[0]);
     }
   }
 
@@ -57,7 +57,7 @@ module.exports = function container (get, set, clear) {
         ]
         try {
           ws_client.send(ws_cancel_order)
-          UnWatchOrder(ord[0])
+          orderWatchList = orderWatchList.filter(_ => ord[0] != _[0]);
         }catch(e){
           console.log("\n can't cancel order", e);
         }
@@ -110,9 +110,9 @@ module.exports = function container (get, set, clear) {
   function wsUpdateOrder (ws_order) {
 
     if (ws_order[13] === 'ACTIVE' || ws_order[13].match(/^PARTIALLY FILLED/)) {
-      WatchOrder(ws_order[0]);
+      WatchOrder(ws_order);
     } else {
-      UnWatchOrder(ws_order[0]);
+      UnWatchOrder(ws_order);
     }
 
     cid = ws_order[2]
@@ -146,7 +146,7 @@ module.exports = function container (get, set, clear) {
   }
 
   function wsUpdateOrderCancel (ws_order) {
-    UnWatchOrder(ws_order[0]);
+    UnWatchOrder(ws_order);
 
     cid = ws_order[2]
 
