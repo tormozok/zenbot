@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 let stopDelta = 0;
+let processLimit = 8;
 
 let shell     = require('shelljs');
 let parallel  = require('run-parallel-limit');
@@ -26,37 +27,45 @@ process.argv.slice(2).forEach(a => {
 console.log("Args: ", constArgs, varArgs);
 
 let cmdCache = {};
+let startedCmds = 0;
 
 let RunCmd = (cmd) => {
-  return new Promise(resolve => {
-    if(cmdCache[cmd]) {
-      return resolve(cmdCache[cmd]);
-    }
+  if(cmdCache[cmd]) {
+    return cmdCache[cmd];
+  }
+
+  cmdCache[cmd] = new Promise(resolve => {
+
+    //console.log("run ->" + cmd);
+
     let exec = () => {
-      console.log(cmd)
-      shell.exec(cmd, {silent: true, async: true}, callback);
-    };
-
-    let callback = (code, stdout, stderr) => {
-      if (code) {
-        console.error(cmd)
-        console.error(stderr)
-        // return cb(null, null)
-        return exec();
+      if(startedCmds >= processLimit) {
+        setTimeout(exec, 1000);
+      } else {
+        startedCmds ++;
+        console.log("exec ->" + cmd);
+        shell.exec(cmd, {silent: true, async: true}, (code, stdout, stderr) => {
+          startedCmds --;
+          if (code) {
+            console.error("ERROR ->" + code + " " + cmd)
+            console.error(stderr)
+            // return cb(null, null)
+            return exec();
+          }
+          let out = null;
+          try {
+            out = processOutput(stdout)
+          } catch (e) {
+            console.error(e)
+            return exec();
+          }
+          resolve(out);
+        });
       }
-      let out = null;
-      try {
-        out = processOutput(stdout)
-      } catch (e) {
-        console.error(e)
-        return exec();
-      }
-      cmdCache[cmd] = out;
-      resolve(out);
     };
-
     exec();
   });
+  return cmdCache[cmd];
 };
 
 let processOutput = output => {
@@ -177,33 +186,39 @@ let run = async() => {
   do {
     oldBalance = bestBalance;
 
+    let sims = [];
+
     for (var i = 0; i < varArgs.length; i++) {
-      let oldArgBalance = 0;
-      do{
-        console.log("Arg -> " + JSON.stringify(varArgs[i]));
-        oldArgBalance = bestBalance;
-        let ps = [];
-        for (var v = Math.max(varArgs[i].value - varArgs[i].delta * varArgs[i].periods, varArgs[i].min);
-             v <= varArgs[i].value + varArgs[i].delta * varArgs[i].periods;
-             v += varArgs[i].delta) {
+      let arg = varArgs[i];
+      for(var j = 0; j <= arg.periods; j++) {
+        for(var s = -1; s <= 1; s +=2) {
+          if(j == 0 && s == 1) {
+            continue;
+          }
+          v = arg.value + arg.delta * j * s;
+          if(v < arg.min) {
+            continue;
+          }
           let curArgs = JSON.parse(JSON.stringify(varArgs));
           curArgs[i].value = v;
           let cmd = mkCmd(curArgs);
           let p = RunCmd(cmd);
-          p.then(r => {
-            if (r.endBalance > bestBalance) {
-              var old = bestBalance;
-              bestBalance = r.endBalance;
-              varArgs = curArgs;
-              console.log("Arg Best -> " + bestBalance + "(+" + (bestBalance - old) + ") " + vargsToStr(varArgs));
-            }
-          });
-          ps.push(p);
+          let sim = {args:curArgs,p:p,endBalance:0};
+          sims.push(sim);
+          p.then(r => sim.endBalance = r.endBalance);
         }
-        await Promise.all(ps);
-        //console.log("Promise.all");
-      } while(Math.abs(bestBalance - oldArgBalance) > stopDelta);
+      }
     }
+
+    await Promise.all(sims.map(s => s.p));
+
+    sims.forEach(sim => {
+      if(sim.endBalance <= bestBalance) {
+        return;
+      }
+      bestBalance = sim.endBalance;
+      varArgs = sim.args;
+    });
 
     console.log("Iteration Best -> " + bestBalance + "(+" + (bestBalance - oldBalance) + ") ");
     console.log("BestArgs: " +vargsToStr(varArgs));
