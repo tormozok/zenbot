@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-let deltas = 5;
 let stopDelta = 0;
 
 let shell     = require('shelljs');
@@ -13,12 +12,12 @@ let StripAnsi = require('strip-ansi');
 let constArgs = [];
 let varArgs = [];
 
-let varArgRegEx = /--(.+)=(.+):(.+):(.+):([a-z]{0,1})/;
+let varArgRegEx = /--(.+)=(.+):(.+):(.+):(.+):([a-z]{0,1})/;
 
 process.argv.slice(2).forEach(a => {
   let match = varArgRegEx.exec(a);
   if(match) {
-    varArgs.push({name:match[1],value:+match[2],delta:+match[3],min:+match[4],suffix:match[5]});
+    varArgs.push({name:match[1],value:+match[2],delta:+match[3],periods:+match[4],min:+match[5],suffix:match[6]});
   } else {
     constArgs.push(a);
   }
@@ -184,8 +183,8 @@ let run = async() => {
         console.log("Arg -> " + JSON.stringify(varArgs[i]));
         oldArgBalance = bestBalance;
         let ps = [];
-        for (var v = Math.max(varArgs[i].value - varArgs[i].delta * deltas, varArgs[i].min);
-             v <= varArgs[i].value + varArgs[i].delta * deltas;
+        for (var v = Math.max(varArgs[i].value - varArgs[i].delta * varArgs[i].periods, varArgs[i].min);
+             v <= varArgs[i].value + varArgs[i].delta * varArgs[i].periods;
              v += varArgs[i].delta) {
           let curArgs = JSON.parse(JSON.stringify(varArgs));
           curArgs[i].value = v;
